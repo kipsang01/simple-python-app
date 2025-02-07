@@ -46,7 +46,7 @@ jobs:
       - name: Run Tests with Coverage
         env:
           DEBUG: 1
-          SECRET_KEY: dwjfberjfboweidweudbjsdcc
+          DJANGO_SECRET_KEY: dwjfberjfboweidweudbjsdcc
           DJANGO_SETTINGS_MODULE: shop.settings
           DB_NAME: github_actions
           DB_USER: postgres
