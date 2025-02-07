@@ -17,7 +17,8 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
 COPY . /app/
+RUN chmod +x ./start_services.sh
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "shop.wsgi:application"]
+CMD ./start_services.sh
