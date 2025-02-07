@@ -101,6 +101,7 @@ jobs:
           script: |
             sudo apt-get update
             sudo apt-get install -y docker.io
+            sudo usermod -aG docker $USER
             sudo systemctl start docker
           
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
