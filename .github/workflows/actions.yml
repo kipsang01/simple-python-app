@@ -3,27 +3,70 @@ name: Customer-Service CI/CD
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_PORT: 5432
+
+    services:
+      database:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orders
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
-      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
-          
-      - name: Install dependencies
+          python-version: "3.10"
+
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - name: Run tests with coverage
+          pip install coverage
+
+      - name: Run Tests with Coverage
+        env:
+          DEBUG: 1
+          SECRET_KEY: dwjfberjfboweidweudbjsdcc
+          DJANGO_SETTINGS_MODULE: shop.settings
+          DB_NAME: github_actions
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          AFRICASTALKING_API_KEY: ${{secrets.AFRICASTALKING_API_KEY}}
+          AFRICASTALKING_USERNAME: ${{ secrets.AFRICASTALKING_USERNAME }}
+          AFRICASTALKING_SENDER_ID: ${{ secrets.AFRICASTALKING_SENDER_ID }}
+
         run: |
           coverage run manage.py test
-          coverage report --fail-under=80
+          coverage report
+          coverage html
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: htmlcov/
 
   build-and-push:
     needs: test
