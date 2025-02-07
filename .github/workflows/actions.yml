@@ -98,36 +98,28 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          envs: DOCKERHUB_USERNAME,DB_HOST,DB_NAME,DB_USER,DB_PASSWORD
-          env:
-            DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-            DB_HOST: ${{ secrets.DB_HOST }}
-            DB_NAME: ${{ secrets.DB_NAME }}
-            DB_USER: ${{ secrets.DB_USERNAME }}
-            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-            DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-            DEBUG: "0"
-            AFRICAS_TALKING_API_KEY: ${{ secrets.AFRICAS_TALKING_API_KEY }}
-            AFRICAS_TALKING_USERNAME: ${{ secrets.AFRICAS_TALKING_USERNAME }}
-            AFRICAS_TALKING_SENDER_ID: ${{ secrets.AFRICAS_TALKING_SENDER_ID }}
-            OIDC_RSA_PRIVATE_KEY: ${{ secrets.OIDC_RSA_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/customer-service
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/customer-service:latest
+          
             
             cat > .env << EOF
-            DB_HOST=${DB_HOST}
-            DB_NAME=${DB_NAME}
-            DB_USER=${DB_USER}
-            DB_PASSWORD=${DB_PASSWORD}
-            DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-            DEBUG=${DEBUG}
-            AFRICAS_TALKING_API_KEY=${AFRICAS_TALKING_API_KEY}
-            AFRICAS_TALKING_USERNAME=${AFRICAS_TALKING_USERNAME}
-            AFRICAS_TALKING_SENDER_ID=${AFRICAS_TALKING_SENDER_ID}
-            OIDC_RSA_PRIVATE_KEY=${OIDC_RSA_PRIVATE_KEY}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+            DEBUG=0
+            AFRICAS_TALKING_API_KEY=${{ secrets.AFRICAS_TALKING_API_KEY }}
+            AFRICAS_TALKING_USERNAME=${{ secrets.AFRICAS_TALKING_USERNAME }}
+            AFRICAS_TALKING_SENDER_ID=${{ secrets.AFRICAS_TALKING_SENDER_ID }}
+            OIDC_RSA_PRIVATE_KEY=${{ secrets.OIDC_RSA_PRIVATE_KEY }}
             EOF
             
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-
-            chmod +x start.sh
-            ./start.sh
+            docker stop customer-service || true
+            docker rm customer-service || true
+            docker run -d \
+              --name customer-service \
+              -p 8000:8000 \
+              --env-file .env \
+              ${{ secrets.DOCKERHUB_USERNAME }}/customer-service:latest
