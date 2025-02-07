@@ -102,6 +102,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y docker.io
             sudo usermod -aG docker $USER
+            sudo chmod 666 /var/run/docker.sock
             sudo systemctl start docker
           
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
