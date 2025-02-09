@@ -1,5 +1,9 @@
 # SIMPLE DJANGO REST FRAMEWORK APP
-simple DRF app to display development process and deployment automation of a large application.
+This is a simple DRF app that displays a large application's development process and deployment automation.
+
+This App assumes you have already set the server e.g. an AWS ec2 instance and you have a database set.
+
+Check this project [app with infrastructure](https://github.com/kipsang01/rest-api) that sets infrastructure using Terraform and deploys it in EKS. 
 ## USAGE
 #### Authorization
 Uses OIDC built on top of OAuth2.0.  
